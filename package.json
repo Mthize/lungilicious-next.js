@@ -16,6 +16,8 @@
   },
   "devDependencies": {
     "@prisma/client": "^6.0.0",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^15.5.15",
     "prisma": "^6.0.0",
     "turbo": "^2.9.6"
   },

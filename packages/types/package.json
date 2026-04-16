@@ -10,6 +10,7 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "@lungilicious/tsconfig": "workspace:*",
     "typescript": "^5.7.0"
   }
 }

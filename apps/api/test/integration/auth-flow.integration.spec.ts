@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import secureSession from '@fastify/secure-session';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { AppModule } from '../../src/app.module.js';
 import { AuthController } from '../../src/modules/auth/auth.controller.js';
 import { MeController } from '../../src/modules/auth/me.controller.js';
 import { ProductController } from '../../src/modules/catalog/product.controller.js';
@@ -134,6 +133,7 @@ describe('Full Auth Flow Integration', () => {
 
   it.skip('should complete the full customer journey', async () => {
     // Requires a real database, Redis, BullMQ, config env, and session guard wiring.
+    const { AppModule } = await import('../../src/app.module.js');
     const integrationModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();

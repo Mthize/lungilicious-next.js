@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import secureSession from '@fastify/secure-session';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { AppModule } from '../../src/app.module.js';
 import { AuthController } from '../../src/modules/auth/auth.controller.js';
 import { CartController } from '../../src/modules/cart/cart.controller.js';
 import { AuthService } from '../../src/modules/auth/auth.service.js';
@@ -139,6 +138,7 @@ describe('Guest Cart → Login → Merge Flow Integration', () => {
 
   it.skip('should merge guest cart into customer cart on login', async () => {
     // Requires real DB, Redis, BullMQ, seeded products/variants/prices, and session guard wiring.
+    const { AppModule } = await import('../../src/app.module.js');
     const integrationModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
