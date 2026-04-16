@@ -1,0 +1,273 @@
+enum PaymentIntentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum TransactionType {
+  CAPTURE
+  REFUND
+  VOID
+}
+
+enum RefundType {
+  FULL
+  PARTIAL
+}
+
+enum RefundStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum WebhookStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageSectionType {
+  HERO_EDITORIAL
+  HERO_SPLIT
+  RICH_TEXT
+  IMAGE_STORY
+  PRODUCT_COLLECTION
+  GALLERY
+  FAQ
+  TESTIMONIALS
+  CTA_BANNER
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model PaymentIntent {
+  id                    String              @id @default(uuid())
+  orderId               String
+  provider              String
+  providerSessionId     String?
+  providerTransactionId String?
+  amount                Decimal             @db.Decimal(10, 2)
+  currency              String              @default("ZAR")
+  status                PaymentIntentStatus @default(PENDING)
+  metadata              Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  transactions PaymentTransaction[]
+  refunds      Refund[]
+
+  @@index([orderId])
+  @@index([provider])
+  @@map("payment_intents")
+}
+
+model PaymentTransaction {
+  id                    String          @id @default(uuid())
+  paymentIntentId       String
+  type                  TransactionType
+  amount                Decimal         @db.Decimal(10, 2)
+  providerTransactionId String          @unique
+  status                String
+  metadata              Json?
+  createdAt             DateTime        @default(now())
+
+  paymentIntent PaymentIntent @relation(fields: [paymentIntentId], references: [id])
+
+  @@index([paymentIntentId])
+  @@map("payment_transactions")
+}
+
+model Refund {
+  id               String       @id @default(uuid())
+  orderId          String
+  paymentIntentId  String
+  providerRefundId String?
+  amount           Decimal      @db.Decimal(10, 2)
+  type             RefundType
+  status           RefundStatus @default(PENDING)
+  reason           String?
+  requestedBy      String
+  idempotencyKey   String       @unique
+  requestedAt      DateTime     @default(now())
+  processedAt      DateTime?
+
+  paymentIntent PaymentIntent @relation(fields: [paymentIntentId], references: [id])
+
+  @@index([orderId])
+  @@map("refunds")
+}
+
+model WebhookEvent {
+  id              String        @id @default(uuid())
+  provider        String
+  providerEventId String        @unique
+  eventType       String
+  payload         Json
+  rawPayload      String
+  status          WebhookStatus @default(PENDING)
+  errorMessage    String?
+  processedAt     DateTime?
+  createdAt       DateTime      @default(now())
+
+  @@index([provider])
+  @@index([eventType])
+  @@map("webhook_events")
+}
+
+model IdempotencyKey {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  requestHash    String
+  responseStatus Int
+  responseBody   String
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
+
+model Page {
+  id             String     @id @default(uuid())
+  slug           String     @unique
+  title          String
+  seoTitle       String?
+  seoDescription String?
+  status         PageStatus @default(DRAFT)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  sections PageSection[]
+
+  @@map("pages")
+}
+
+model PageSection {
+  id        String          @id @default(uuid())
+  pageId    String
+  type      PageSectionType
+  order     Int
+  data      Json
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  page Page @relation(fields: [pageId], references: [id])
+
+  @@index([pageId])
+  @@map("page_sections")
+}
+
+model FaqItem {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  category  String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faq_items")
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  authorName  String
+  authorTitle String?
+  content     String
+  rating      Int?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+model Gallery {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items GalleryItem[]
+
+  @@map("galleries")
+}
+
+model GalleryItem {
+  id           String   @id @default(uuid())
+  galleryId    String
+  url          String
+  altText      String
+  caption      String?
+  photographer String?
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  gallery Gallery @relation(fields: [galleryId], references: [id])
+
+  @@index([galleryId])
+  @@map("gallery_items")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model FeatureFlag {
+  id                String   @id @default(uuid())
+  name              String   @unique
+  description       String
+  isEnabled         Boolean  @default(false)
+  rolloutPercentage Int      @default(0)
+  updatedAt         DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+model JobRun {
+  id          String    @id @default(uuid())
+  queue       String
+  jobId       String
+  jobName     String
+  status      JobStatus @default(QUEUED)
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  metadata    Json?
+
+  @@index([queue])
+  @@index([status])
+  @@map("job_runs")
+}

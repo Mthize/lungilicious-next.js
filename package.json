@@ -11,9 +11,12 @@
     "test": "turbo run test",
     "start:dev": "turbo run start:dev",
     "start:prod": "turbo run start:prod",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "postinstall": "prisma generate"
   },
   "devDependencies": {
+    "@prisma/client": "^6.0.0",
+    "prisma": "^6.0.0",
     "turbo": "^2.9.6"
   },
   "engines": {

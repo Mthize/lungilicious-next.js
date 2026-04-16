@@ -1,0 +1,96 @@
+enum PaymentProvider {
+  PEACH
+  PAYFAST
+  YOCO
+}
+
+model Customer {
+  id                   String    @id @default(uuid())
+  userId               String    @unique
+  firstName            String
+  lastName             String
+  phone                String?
+  avatarUrl            String?
+  marketingConsent     Boolean   @default(false)
+  communicationConsent Boolean   @default(false)
+  notes                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  deletedAt            DateTime?
+
+  user           User                  @relation(fields: [userId], references: [id])
+  addresses      CustomerAddress[]
+  preference     CustomerPreference?
+  paymentMethods CustomerPaymentMethod[]
+  supportNotes   CustomerSupportNote[]
+
+  @@map("customers")
+}
+
+model CustomerAddress {
+  id         String   @id @default(uuid())
+  customerId String
+  label      String
+  firstName  String
+  lastName   String
+  line1      String
+  line2      String?
+  city       String
+  province   String
+  postalCode String
+  country    String   @default("ZA")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@map("customer_addresses")
+}
+
+model CustomerPreference {
+  id           String   @id @default(uuid())
+  customerId   String   @unique
+  currency     String   @default("ZAR")
+  language     String   @default("en")
+  dietaryFlags String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@map("customer_preferences")
+}
+
+model CustomerPaymentMethod {
+  id            String          @id @default(uuid())
+  customerId    String
+  provider      PaymentProvider
+  providerToken String
+  brand         String
+  last4         String
+  expiryMonth   Int
+  expiryYear    Int
+  isDefault     Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  revokedAt     DateTime?
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@map("customer_payment_methods")
+}
+
+model CustomerSupportNote {
+  id         String   @id @default(uuid())
+  customerId String
+  content    String
+  createdBy  String
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@map("customer_support_notes")
+}
