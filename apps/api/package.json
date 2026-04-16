@@ -26,6 +26,8 @@
     "@prisma/client": "^6.0.0",
     "argon2": "^0.41.0",
     "bullmq": "^5.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "fastify": "^5.0.0",
     "ioredis": "^5.0.0",
     "otplib": "^13.4.0",
