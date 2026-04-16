@@ -35,7 +35,7 @@ import {
       useFactory: (): QueueServiceStub => new QueueServiceStub(),
     },
   ],
-  exports: ['QUEUE_SERVICE'],
+  exports: [BullModule, 'QUEUE_SERVICE'],
 })
 export class QueueModule {}
 

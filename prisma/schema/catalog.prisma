@@ -230,8 +230,10 @@ model CouponCode {
   maxUsageCount Int?
   usedCount     Int      @default(0)
   isActive      Boolean  @default(true)
+  expiresAt     DateTime?
   createdAt     DateTime @default(now())
 
+  carts       Cart[]             
   promotion   Promotion          @relation(fields: [promotionId], references: [id])
   redemptions CouponRedemption[]
 
